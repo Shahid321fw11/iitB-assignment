@@ -1,0 +1,29 @@
+ADMIN DASHBOARD
+
+1) LOGIN PAGE
+2) SIGN UP PAGE
+
+After Sign up the user needs approval from ADMIN and if ADMIN disapproves USER will not be able to login
+
+For SIGN UP PAGE Requirements
+1)USERNAME *
+2)Email-ID 
+3)Password *
+4)DOB *
+5)PHOTO *(Note :- In JPEG/PNG format only)
+6)CV *(Note :- In PDF format only)
+7)CAPTCHA Verification
+
+
+For LOGIN PAGE Requirements
+1)USERNAME *
+2)PASSWORD *
+3)CAPTCHA Verification *
+
+After Successful Login Admin can see all users in dashboard and he will be able to approve and disapprove the users
+Also After successful user login he can see and update his own profile
+
+
+
+
+
