@@ -6,7 +6,7 @@ import ReCAPTCHA from "react-google-recaptcha"; // Added for CAPTCHA
 
 const Signup = () => {
   // const BASE_URL = "https://weather-react-app-backend-hiuv.onrender.com";
-  const BASE_URL = "";
+  const BASE_URL = "http://localhost:8080";
   const [data, setData] = useState({
     username: "",
     email: "",
@@ -43,6 +43,9 @@ const Signup = () => {
     for (const key in data) {
       formData.append(key, data[key]);
     }
+    console.log("hello");
+    console.log(data);
+    console.log(formData);
 
     try {
       const url = `${BASE_URL}/api/users`;
@@ -93,7 +96,6 @@ const Signup = () => {
               name="email"
               onChange={handleChange}
               value={data.email}
-              required
               className={styles.input}
             />
             <input
