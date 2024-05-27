@@ -6,7 +6,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 const Login = () => {
   // const BASE_URL = "https://weather-react-app-backend-hiuv.onrender.com";
-  const BASE_URL = "";
+  const BASE_URL = "http://localhost:8000";
   const [data, setData] = useState({ username: "", password: "", captcha: "" });
   const [captchaVerified, setCaptchaVerified] = useState(false); // State for CAPTCHA verification
   const [error, setError] = useState("");
@@ -24,6 +24,8 @@ const Login = () => {
     e.preventDefault();
     try {
       const url = `${BASE_URL}/api/auth`;
+      console.log("logindata", data);
+      data.captcha = "";
       const { data: res } = await axios.post(url, data);
       localStorage.setItem("token", res.data);
       window.location = "/";

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const Joi = require("joi");
-const passwordComplexity = require("joi-password-complexity");
+// const Joi = require("joi");
+// const passwordComplexity = require("joi-password-complexity");
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -11,9 +11,9 @@ const userSchema = new mongoose.Schema({
   dob: { type: Date, required: true }, // Adding date of birth field
   photo: { data: Buffer, contentType: String }, // Store path to user's photo
   cv: { data: Buffer, contentType: String }, // Store path to user's CV
-  isVerified: { type: String, required: false },
-  isAdmin: { type: String, required: false },
-  isAdminApproved: { type: Boolean, default: false }, // Flag for admin approval
+  isVerified: { type: Boolean, required: false, default: false },
+  isAdmin: { type: Boolean, required: false, default: false },
+  isAdminApproved: { type: Boolean, required: false, default: false }, // Flag for admin approval
 });
 
 userSchema.methods.generateAuthToken = function () {

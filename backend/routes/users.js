@@ -1,6 +1,6 @@
 const fs = require("fs");
 const router = require("express").Router();
-const { User, validate } = require("../models/user");
+const { User } = require("../models/user");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
@@ -50,11 +50,6 @@ router.post(
     const { username, email, password, dob, captcha, photo, cv } = req.body;
     // console.log("1111", username, email, password, dob, captcha);
     try {
-      // const { error } = validate(req.body);
-      // console.log("error", error);
-      // if (error)
-      //   return res.status(400).send({ message: error.details[0].message });
-
       const user = await User.findOne({ username: req.body.username });
       if (user)
         return res
