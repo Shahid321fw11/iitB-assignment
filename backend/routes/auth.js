@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
       isAdmin: user.isAdmin,
       username: user.username,
       email: user.email,
-      dateOfBirth: user.dateOfBirth,
+      dob: user.dob,
       photo: photo,
       cv: cv,
     };
