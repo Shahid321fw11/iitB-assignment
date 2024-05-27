@@ -7,9 +7,12 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: false },
   password: { type: String, required: true },
+  captcha: { type: String, required: true },
   dob: { type: Date, required: true }, // Adding date of birth field
-  photo: { type: String, required: true }, // Store path to user's photo
-  cv: { type: String, required: true }, // Store path to user's CV
+  photo: { data: Buffer, contentType: String }, // Store path to user's photo
+  cv: { data: Buffer, contentType: String }, // Store path to user's CV
+  isVerified: { type: String, required: false },
+  isAdmin: { type: String, required: false },
   isAdminApproved: { type: Boolean, default: false }, // Flag for admin approval
 });
 
@@ -22,16 +25,17 @@ userSchema.methods.generateAuthToken = function () {
 
 const User = mongoose.model("user", userSchema);
 
-const validate = (data) => {
-  const schema = Joi.object({
-    username: Joi.string().required().label("Username"),
-    password: passwordComplexity().required().label("Password"),
-    dob: Joi.date().required().label("Date of Birth"),
-    photo: Joi.string().required().label("Photo"),
-    cv: Joi.string().required().label("CV"),
-    email: Joi.string().email().label("Email").allow("", null), // Allowing empty or null value
-  });
-  return schema.validate(data);
-};
+// const validate = (data) => {
+//   // console.log("data in ", data);
+//   const schema = Joi.object({
+//     username: Joi.string().required().label("Username"),
+//     password: passwordComplexity().required().label("Password"),
+//     dob: Joi.date().required().label("Date of Birth"),
+//     captcha: Joi.string().required().label("Captcha"),
+//     email: Joi.string().email().label("Email").allow("", null), // Allowing empty or null value
+//   });
+//   return schema.validate(data);
+// };
 
-module.exports = { User, validate };
+// module.exports = { User, validate };
+module.exports = { User };

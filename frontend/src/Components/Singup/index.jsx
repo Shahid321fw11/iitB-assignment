@@ -6,7 +6,7 @@ import ReCAPTCHA from "react-google-recaptcha"; // Added for CAPTCHA
 
 const Signup = () => {
   // const BASE_URL = "https://weather-react-app-backend-hiuv.onrender.com";
-  const BASE_URL = "http://localhost:8080";
+  const BASE_URL = "http://localhost:8000";
   const [data, setData] = useState({
     username: "",
     email: "",
@@ -16,6 +16,7 @@ const Signup = () => {
     cv: null,
     captcha: "",
   });
+
   const [captchaVerified, setCaptchaVerified] = useState(false); // State for CAPTCHA verification
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -23,8 +24,8 @@ const Signup = () => {
   // Handle input change
   const handleChange = ({ currentTarget: input }) => {
     if (input.type === "file") {
-      // Handle file input for photo and CV
-      setData({ ...data, [input.name]: input.files[0] });
+      const updatedData = { ...data, [input.name]: input.files[0] };
+      setData(updatedData);
     } else {
       setData({ ...data, [input.name]: input.value });
     }
@@ -39,16 +40,21 @@ const Signup = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    for (const key in data) {
-      formData.append(key, data[key]);
-    }
-    console.log("hello");
-    console.log(data);
-    console.log(formData);
 
+    const formData = new FormData();
+    formData.append("username", data.username);
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    formData.append("dob", data.dob);
+    formData.append("photo", data.photo);
+    formData.append("cv", data.cv);
+    formData.append("captcha", data.captcha);
+
+    console.log("form", data);
+    console.log("formData", formData);
     try {
       const url = `${BASE_URL}/api/users`;
+      console.log(url, BASE_URL);
       const { data: res } = await axios.post(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -150,5 +156,4 @@ const Signup = () => {
     </div>
   );
 };
-
 export default Signup;
