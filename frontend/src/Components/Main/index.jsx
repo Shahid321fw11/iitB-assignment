@@ -1,77 +1,111 @@
 import styles from "./styles.module.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 // import "./App.css";
 
 const Main = () => {
-	const handleLogout = () => {
-		localStorage.removeItem("token");
-		window.location.reload();
-	};
+  const [userData, setUserData] = useState(null);
+  const [users, setUsers] = useState([]);
+  const BASE_URL = "http://localhost:8000";
 
-	const [data, setData] = useState({});
-	const [cityName, setCityName] = useState("");
-	const weather_api = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&units=imperial&appid=5a18649b9875dbb4fd25b9dce8346a27`;
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    setUserData(userData);
+    if (userData && userData.isAdmin) {
+      fetchUsers();
+    }
+  }, []);
 
-	const searchLoaction = (event) => {
-		// console.log(cityName, setCityName);
-		if (event.key === "Enter") {
-		axios.get(weather_api).then((response) => {
-			setData(response.data);
-			console.log(response.data);			
-		});
-		setCityName("");
-		}
-	};
+  const fetchUsers = () => {
+    const url = `${BASE_URL}/api/users`;
+    // Fetch the list of users for the admin dashboard
+    axios
+      .get(url, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then((response) => setUsers(response.data))
+      .catch((error) => console.error("Error fetching users:", error));
+  };
 
-	return (
-		<div className={styles.main_container}>
-			<nav className={styles.navbar}>
-				<h1>Weather_App</h1>
-				<button className={styles.white_btn} onClick={handleLogout}>
-					Logout
-				</button>
-			</nav>
-			<div className={styles.main_weather}>
-				<div className={styles.container}>
-					<div className={styles.search_box}>
-					<input
-						value={cityName}
-						onChange={(event) => setCityName(event.target.value)}
-						onKeyPress={searchLoaction}
-						placeholder="Enter Place Name"
-						type="text"
-					></input>
-					</div>
-					<div className={styles.top}>
-						<p className={styles.name}>{data.name}</p>
-						{data.main ? <p className={styles.temp}>{data.main.temp}°F</p> : null}
-						{data.weather ? (
-							<p className={styles.description}>{data.weather[0].description}</p>
-						) : null}
-					</div>
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userData");
+    window.location.reload();
+  };
 
-					<div className={styles.bottom}>
-					{data.main ? (
-						<p className={styles.humidity}>
-						{data.main.humidity}% <br /> Humidity
-						</p>
-					) : null}
-					{data.main ? (
-						<p className={styles.feelsLike}>
-						{data.main.feels_like}°F <br /> Feels Like
-						</p>
-					) : null}
-					{data.wind ? (
-						<p className={styles.wind_speed}>
-						{data.wind.speed} MPH <br /> Wind Speed
-						</p>
-					) : null}
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+  const handleApproval = (userId, isApproved) => {
+    axios
+      .put(
+        `/api/admin/approve/${userId}`,
+        { isApproved },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      )
+      .then(() => fetchUsers())
+      .catch((error) => console.error("Error updating user status:", error));
+  };
+
+  return (
+    <>
+      <div className={styles.main_container}>
+        <nav className={styles.navbar}>
+          <h1>IIT_B Dashboard</h1>
+          <button className={styles.white_btn} onClick={handleLogout}>
+            Logout
+          </button>
+        </nav>
+        <div className={styles.main_weather}>
+          {userData && userData.isAdmin ? (
+            <div className={styles.admin_section}>
+              <h2>Manage Users</h2>
+              <table className={styles.user_table}>
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>DOB</th>
+                    <th>Approval Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user._id}>
+                      <td>{user.username}</td>
+                      <td>{user.email}</td>
+                      <td>{user.dob}</td>
+                      <td>{user.isApproved ? "Approved" : "Pending"}</td>
+                      <td>
+                        <button
+                          onClick={() =>
+                            handleApproval(user._id, !user.isApproved)
+                          }
+                          className={
+                            user.isApproved
+                              ? styles.disapprove_btn
+                              : styles.approve_btn
+                          }
+                        >
+                          {user.isApproved ? "Disapprove" : "Approve"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className={styles.user_section}>
+              <h2>Welcome, {userData ? userData.username : "User"}!</h2>
+              <p>Here you can manage your profile.</p>
+              {/* Add more user-specific functionalities here */}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Main;

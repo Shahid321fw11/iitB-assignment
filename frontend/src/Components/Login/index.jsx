@@ -25,9 +25,9 @@ const Login = () => {
     try {
       const url = `${BASE_URL}/api/auth`;
       console.log("logindata", data);
-      data.captcha = "";
       const { data: res } = await axios.post(url, data);
       localStorage.setItem("token", res.data);
+      localStorage.setItem("userData", JSON.stringify(res.userData));
       window.location = "/";
     } catch (error) {
       if (

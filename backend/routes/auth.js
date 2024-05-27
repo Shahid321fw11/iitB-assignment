@@ -13,28 +13,49 @@ const Joi = require("joi");
 // };
 
 router.post("/", async (req, res) => {
-  console.log("logindata", req.body);
+  const { username, password, captcha } = req.body;
   try {
     // const { error } = validate(req.body);
     // if (error)
     //   return res.status(400).send({ message: error.details[0].message });
 
-    const user = await User.findOne({ username: req.body.username });
+    const user = await User.findOne({ username });
     if (!user)
       return res.status(401).send({ message: "Invalid Username or Password" });
 
-    const validPassword = await bcrypt.compare(
-      req.body.password,
-      user.password
-    );
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword)
       return res.status(401).send({ message: "Invalid Password" });
 
     if (!user.isAdminApproved)
       return res.status(403).send({ message: "User not approved by admin" });
 
+    const photoBase64 = user.photo.data.toString("base64");
+    const photo = {
+      data: photoBase64,
+      contentType: user.photo.contentType,
+    };
+    const cvBase64 = user.cv.data.toString("base64");
+    const cv = {
+      data: cvBase64,
+      contentType: user.cv.contentType,
+    };
+    const userData = {
+      userId: user._id,
+      isAdmin: user.isAdmin,
+      username: user.username,
+      email: user.email,
+      dateOfBirth: user.dateOfBirth,
+      photo: photo,
+      cv: cv,
+    };
+
     const token = user.generateAuthToken();
-    res.status(200).send({ data: token, message: "logged in successfully" });
+    res.status(200).send({
+      data: token,
+      userData: userData,
+      message: "logged in successfully",
+    });
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
   }

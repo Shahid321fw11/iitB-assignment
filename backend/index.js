@@ -3,9 +3,9 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
-const connection = require("./db");
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
+const connection = require("./db");
 
 const app = express();
 const port = process.env.PORT || 8080;
