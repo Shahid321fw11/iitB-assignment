@@ -7,7 +7,8 @@ const Main = () => {
   const [userData, setUserData] = useState(null);
   const [users, setUsers] = useState([]);
   const [userProfile, setUserProfile] = useState(null); // Added userProfile state
-  const BASE_URL = "http://localhost:8000";
+  // const BASE_URL = "http://localhost:8000";
+  const BASE_URL = "https://iitb-assignment.onrender.com";
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
