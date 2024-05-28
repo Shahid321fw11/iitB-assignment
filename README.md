@@ -43,7 +43,7 @@ PORT = 8000
 5. Fire up the frontend server by running `npm start` in the frontend directory.
 
 
-### You can also check out the hosted version of the website [here](https://verdant-fudge-10942a.netlify.app/).
+### You can also check out the hosted version of the website [here](https://66557812fb34dbab6f9dee38--verdant-fudge-10942a.netlify.app/).
 
 ### Features
 I'm proud of the features packed into this project:
