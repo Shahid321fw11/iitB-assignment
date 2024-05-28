@@ -66,7 +66,7 @@ const Login = () => {
             />
 
             <ReCAPTCHA
-              sitekey="6Lf5cOgpAAAAAKxYvKrw8X_vcsN9KsNi0OCNpGD4"
+              sitekey="6LcvLuopAAAAAPfU0avqIaru49qmrsJq7Kl6H0Pb"
               // sitekey="your-recaptcha-site-key" // Added ReCAPTCHA component
               onChange={handleCaptcha}
             />

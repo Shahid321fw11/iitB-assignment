@@ -139,7 +139,7 @@ const Signup = () => {
             />
             <ReCAPTCHA
               // sitekey="your-recaptcha-site-key" // Added ReCAPTCHA component
-              sitekey="6Lf5cOgpAAAAAKxYvKrw8X_vcsN9KsNi0OCNpGD4" // Added ReCAPTCHA component
+              sitekey="6LcvLuopAAAAAPfU0avqIaru49qmrsJq7Kl6H0Pb" // Added ReCAPTCHA component
               onChange={handleCaptcha}
             />
             {error && <div className={styles.error_msg}>{error}</div>}

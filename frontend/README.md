@@ -1,4 +1,4 @@
-# MERN-WEATHER-APP - Frontend.
+<!-- # MERN-WEATHER-APP - Frontend.
 
 ## Deployed link of project
 
@@ -20,4 +20,4 @@
 
 - Main Weather Page after Successful login.
 
-## Thankyou 🙌🙌🙌 😊.
+## Thankyou 🙌🙌🙌 😊. -->

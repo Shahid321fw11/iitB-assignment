@@ -1,4 +1,4 @@
-# Let's walk throught the Backend of Mern-Weather-App
+<!-- # Let's walk throught the Backend of Mern-Weather-App
 
 ## Deployed link of project
 
@@ -25,4 +25,4 @@
 - Login
 - Inputs Validation on Server Side
 
-## 📝 Thank you for reading.
+## 📝 Thank you for reading. -->
