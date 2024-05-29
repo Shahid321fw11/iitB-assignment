@@ -5,8 +5,8 @@ import styles from "./styles.module.css";
 import ReCAPTCHA from "react-google-recaptcha";
 
 const Login = () => {
-  const BASE_URL = "https://iitb-assignment.onrender.com";
-  // const BASE_URL = "http://localhost:8000";
+  // const BASE_URL = "https://iitb-assignment.onrender.com";
+  const BASE_URL = "http://localhost:8000";
   const [data, setData] = useState({ username: "", password: "", captcha: "" });
   const [captchaVerified, setCaptchaVerified] = useState(false); // State for CAPTCHA verification
   const [error, setError] = useState("");

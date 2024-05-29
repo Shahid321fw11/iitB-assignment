@@ -7,8 +7,10 @@ const Main = () => {
   const [userData, setUserData] = useState(null);
   const [users, setUsers] = useState([]);
   const [userProfile, setUserProfile] = useState(null); // Added userProfile state
-  // const BASE_URL = "http://localhost:8000";
-  const BASE_URL = "https://iitb-assignment.onrender.com";
+  const BASE_URL = "http://localhost:8000";
+  const [loading, setLoading] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(null);
+  // const BASE_URL = "https://iitb-assignment.onrender.com";
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
@@ -74,6 +76,7 @@ const Main = () => {
   };
 
   const handleApproval = (userId, isApproved) => {
+    setLoadingUser(userId);
     axios
       .put(
         `${BASE_URL}/api/users/approve/${userId}`,
@@ -82,8 +85,14 @@ const Main = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       )
-      .then(() => fetchUsers())
-      .catch((error) => console.error("Error updating user status:", error));
+      .then(() => {
+        fetchUsers();
+        setLoadingUser(null);
+      })
+      .catch((error) => {
+        console.error("Error updating user status:", error);
+        setLoadingUser(null);
+      });
   };
 
   //   const handleDownload = (filePath) => {
@@ -166,8 +175,13 @@ const Main = () => {
                               ? styles.disapprove_btn
                               : styles.approve_btn
                           }
+                          disabled={loadingUser === user._id}
                         >
-                          {user.isAdminApproved ? "Disapprove" : "Approve"}
+                          {loadingUser === user._id
+                            ? "Loading..."
+                            : user.isAdminApproved
+                            ? "Disapprove"
+                            : "Approve"}
                         </button>
                       </td>
                     </tr>
