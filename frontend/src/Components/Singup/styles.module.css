@@ -97,3 +97,27 @@
 	margin: 10px;
 }
 
+.input_container {
+	position: relative;
+	width: 370px;
+	margin: 5px 0;
+}
+
+.input_field {
+	width: 100%;
+	padding: 15px;
+	border-radius: 10px;
+	background-color: #edf5f3;
+	border: none;
+	outline: none;
+	font-size: 14px;
+}
+
+.icon {
+	position: absolute;
+	right: 15px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+	color: gray;
+}
