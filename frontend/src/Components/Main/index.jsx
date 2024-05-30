@@ -95,13 +95,18 @@ const Main = () => {
   };
 
   const handleSubmitEdit = async () => {
-    if (cvFile) {
-      const cvUrl = await uploadToCloudinary(cvFile);
-      setUpdatedUser((prevUser) => ({ ...prevUser, cv: cvUrl }));
-    }
-    if (photoFile) {
+    console.log("sele", selectedUser);
+    console.log("up", updatedUser);
+    if (selectedUser.photo === updatedUser.photo) {
+      console.log(selectedUser.photo === updatedUser.photo);
+
       const photoUrl = await uploadToCloudinary(photoFile);
       setUpdatedUser((prevUser) => ({ ...prevUser, photo: photoUrl }));
+    }
+    if (selectedUser.cv === updatedUser.cv) {
+      console.log(selectedUser.cv === updatedUser.cv);
+      const cvUrl = await uploadToCloudinary(cvFile);
+      setUpdatedUser((prevUser) => ({ ...prevUser, cv: cvUrl }));
     }
 
     const changes = {};
@@ -111,6 +116,7 @@ const Main = () => {
       }
     }
 
+    console.log("chasges", changes);
     axios
       .put(`${BASE_URL}/api/users/${selectedUser._id}`, changes, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -208,6 +214,7 @@ const Main = () => {
             </div>
           ) : (
             <User userData={userData} />
+            // <User userData={userData} />
           )}
         </div>
       </div>

@@ -2,38 +2,129 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./styles.module.css";
 
-const User = ({ userData }) => {
+const User = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
   const [cvFile, setCvFile] = useState(null);
+  const [userData, setUserData] = useState(null);
 
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    setUserData(userData);
+  }, []);
   const photoUrl = JSON.parse(localStorage.getItem("userData")).photo;
 
   useEffect(() => {
     setUserProfile(userData);
-    console.log(userProfile);
   }, [userData]);
 
   const BASE_URL = "http://localhost:8000";
 
-  const updateUserProfile = () => {
-    const formData = new FormData();
-    formData.append("username", userProfile.username);
-    formData.append("email", userProfile.email);
-    formData.append("password", userProfile.password);
-    formData.append("dob", userProfile.dob);
-    formData.append("cv", cvFile); // Append CV file
-    formData.append("photo", photoFile); // Append photo file
+  const uploadToCloudinary = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "my-mern-chat-app-cloud");
+      formData.append("cloud_name", "my-chat-app-mern-cloudinary");
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/my-chat-app-mern-cloudinary/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Error uploading file to Cloudinary:", error);
+      throw error;
+    }
+  };
 
-    axios
-      .put(`${BASE_URL}/api/users/${userData.userId}`, formData, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
-        setUserProfile(response.data);
-        localStorage.setItem("userData", JSON.stringify(response.data));
-      })
-      .catch((error) => console.error("Error updating user profile:", error));
+  //   const updateUserProfile = () => {
+  //     const formData = new FormData();
+  //     formData.append("username", userProfile.username);
+  //     formData.append("email", userProfile.email);
+  //     formData.append("password", userProfile.password);
+  //     formData.append("dob", userProfile.dob);
+  //     formData.append("cv", cvFile); // Append CV file
+  //     formData.append("photo", photoFile); // Append photo file
+  //     const formDataValues = {};
+  //     for (const [key, value] of formData.entries()) {
+  //       formDataValues[key] = value;
+  //     }
+
+  //     console.log(formDataValues);
+  //     console.log(userProfile._id);
+  //     axios
+  //       .put(`${BASE_URL}/api/users/${userProfile._id}`, formData, {
+  //         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  //       })
+  //       .then((response) => {
+  //         setUserProfile(response.data);
+  //         localStorage.setItem("userData", JSON.stringify(response.data));
+  //       })
+  //       .catch((error) => console.error("Error updating user profile:", error));
+  //   };
+
+  const updateUserProfile = async () => {
+    try {
+      const formData = new FormData();
+
+      // Check if username is changed
+      if (userProfile.username !== userData.username) {
+        formData.append("username", userProfile.username);
+      }
+
+      // Check if email is changed
+      if (userProfile.email !== userData.email) {
+        formData.append("email", userProfile.email);
+      }
+
+      // Check if password is changed
+      if (userProfile.password !== userData.password) {
+        formData.append("password", userProfile.password);
+      }
+
+      // Check if dob is changed
+      if (userProfile.dob !== userData.dob) {
+        formData.append("dob", userProfile.dob);
+      }
+
+      // Check if CV file exists and is of correct type
+      if (cvFile && cvFile.type === "application/pdf") {
+        const cvUrl = await uploadToCloudinary(cvFile);
+        formData.append("cv", cvUrl);
+      }
+
+      // Check if photo file exists and is of correct type
+      if (
+        photoFile &&
+        (photoFile.type === "image/jpeg" || photoFile.type === "image/png")
+      ) {
+        const photoUrl = await uploadToCloudinary(photoFile);
+        formData.append("photo", photoUrl);
+      }
+
+      // If any changes detected, send request to update profile
+      if (formData.entries().next().done === false) {
+        axios
+          .put(`${BASE_URL}/api/users/${userProfile._id}`, formData, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((response) => {
+            setUserProfile(response.data);
+            localStorage.setItem("userData", JSON.stringify(response.data));
+          })
+          .catch((error) =>
+            console.error("Error updating user profile:", error)
+          );
+      }
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+    }
   };
 
   // Handle photo file change
