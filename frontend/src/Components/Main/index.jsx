@@ -1,51 +1,30 @@
-import styles from "./styles.module.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import ModalPopup from "../Modal";
+import styles from "./styles.module.css";
 import User from "./User";
-// import "./App.css";
 
 const Main = () => {
   const [userData, setUserData] = useState(null);
   const [users, setUsers] = useState([]);
-  const [userProfile, setUserProfile] = useState(null); // Added userProfile state
   const [loadingUser, setLoadingUser] = useState(null);
-  const BASE_URL = "http://localhost:8000";
-
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [updatedUser, setUpdatedUser] = useState(null);
+  const [cvFile, setCvFile] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null);
 
-  const handleEdit = (user) => {
-    console.log("sele", user);
-    setSelectedUser(user);
-    setShowModal(true);
-  };
-
-  // Event handler to close modal
-  const handleCloseModal = () => {
-    setSelectedUser(null);
-    setShowModal(false);
-  };
-
-  // const BASE_URL = "https://iitb-assignment.onrender.com";
+  const BASE_URL = "http://localhost:8000";
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     setUserData(userData);
-    setUserProfile(userData);
-
     if (userData && userData.isAdmin) {
       fetchUsers();
-    } else if (userData || !userData.isAdmin) {
-      console.log("not user Admin");
     }
-    console.log("userData", users);
   }, []);
 
-  // Function to fetch the list of users (admin functionality)
   const fetchUsers = () => {
     const url = `${BASE_URL}/api/users`;
-    // Fetch the list of users for the admin dashboard
     axios
       .get(url, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -53,14 +32,27 @@ const Main = () => {
       .then((response) => setUsers(response.data))
       .catch((error) => console.error("Error fetching users:", error));
   };
-  // Function to handle logout
+
+  const handleEdit = (user) => {
+    setSelectedUser(user);
+    setShowModal(true);
+    setUpdatedUser({ ...user });
+  };
+
+  const handleCloseModal = () => {
+    setSelectedUser(null);
+    setShowModal(false);
+    setUpdatedUser(null);
+    setCvFile(null);
+    setPhotoFile(null);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
     window.location.reload();
   };
 
-  // Function to handle user approval/disapproval
   const handleApproval = (userId, isApproved) => {
     setLoadingUser(userId);
     axios
@@ -81,27 +73,46 @@ const Main = () => {
       });
   };
 
-  // Function to handle updating user profile
-  const updateUserProfile = () => {
-    const { username, email } = userProfile;
-    const updatedProfile = { username, email };
-
-    axios
-      .put(`${BASE_URL}/api/users/${userData.userId}`, updatedProfile, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
-        setUserProfile(response.data);
-        setUserData(response.data);
-        localStorage.setItem("userData", JSON.stringify(response.data));
-      })
-      .catch((error) => console.error("Error updating user profile:", error));
+  const uploadToCloudinary = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "my-mern-chat-app-cloud");
+      formData.append("cloud_name", "my-chat-app-mern-cloudinary");
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/my-chat-app-mern-cloudinary/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Error uploading file to Cloudinary:", error);
+      throw error;
+    }
   };
 
-  // Function to handle the submission of edited user data from the modal
-  const handleSubmitEdit = (updatedUserData) => {
+  const handleSubmitEdit = async () => {
+    if (cvFile) {
+      const cvUrl = await uploadToCloudinary(cvFile);
+      setUpdatedUser((prevUser) => ({ ...prevUser, cv: cvUrl }));
+    }
+    if (photoFile) {
+      const photoUrl = await uploadToCloudinary(photoFile);
+      setUpdatedUser((prevUser) => ({ ...prevUser, photo: photoUrl }));
+    }
+
+    const changes = {};
+    for (const key in selectedUser) {
+      if (selectedUser[key] !== updatedUser[key]) {
+        changes[key] = updatedUser[key];
+      }
+    }
+
     axios
-      .put(`${BASE_URL}/api/users/${updatedUserData._id}`, updatedUserData, {
+      .put(`${BASE_URL}/api/users/${selectedUser._id}`, changes, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
       .then(() => {
@@ -109,6 +120,32 @@ const Main = () => {
         handleCloseModal();
       })
       .catch((error) => console.error("Error updating user data:", error));
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUpdatedUser((prevUser) => ({
+      ...prevUser,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (name === "cv") {
+      setCvFile(files[0]);
+    } else if (name === "photo") {
+      setPhotoFile(files[0]);
+    }
   };
 
   return (
@@ -127,11 +164,9 @@ const Main = () => {
               <table className={styles.user_table}>
                 <thead>
                   <tr>
-                    {/* <th>Picture</th> */}
                     <th>Username</th>
                     <th>Email</th>
                     <th>DOB</th>
-                    {/* <th>CV</th> */}
                     <th>Status</th>
                     <th>Actions</th>
                     <th>Edit</th>
@@ -140,11 +175,9 @@ const Main = () => {
                 <tbody>
                   {users.map((user) => (
                     <tr key={user._id}>
-                      {/* <td>{renderPhoto(user.photo)}</td> */}
                       <td>{user.username}</td>
                       <td>{user.email}</td>
                       <td>{new Date(user.dob).toLocaleDateString()}</td>
-                      {/* <td>{renderCV(user.cv)}</td> */}
                       <td>{user.isAdminApproved ? "Approved" : "Pending"}</td>
                       <td>
                         <button
@@ -174,64 +207,97 @@ const Main = () => {
               </table>
             </div>
           ) : (
-            // <div className={styles.user_section}>
-            //   <h2>Welcome, {userData ? userData.username : "User"}!</h2>
-            //   {userProfile ? (
-            //     <>
-            //       <p>Manage your profile:</p>
-            //       <form className={styles.form_container}>
-            //         <div className={styles.form_container_div}>
-            //           <label>Username:</label>
-            //           <input
-            //             type="text"
-            //             className={styles.input}
-            //             value={userProfile.username}
-            //             onChange={(e) =>
-            //               setUserProfile({
-            //                 ...userProfile,
-            //                 username: e.target.value,
-            //               })
-            //             }
-            //           />
-            //         </div>
-            //         <div className={styles.form_container_div}>
-            //           <label>Email:</label>
-            //           <input
-            //             type="email"
-            //             className={styles.input}
-            //             value={userProfile.email}
-            //             onChange={(e) =>
-            //               setUserProfile({
-            //                 ...userProfile,
-            //                 email: e.target.value,
-            //               })
-            //             }
-            //           />
-            //         </div>
-            //         <button
-            //           className={styles.green_btn}
-            //           type="button"
-            //           onClick={() => updateUserProfile(userProfile)}
-            //         >
-            //           Update Profile
-            //         </button>
-            //       </form>
-            //     </>
-            //   ) : (
-            //     <p>Loading...</p>
-            //   )}
-            // </div>
-            // <User />
             <User userData={userData} />
           )}
         </div>
       </div>
       {showModal && (
-        <ModalPopup
-          user={selectedUser}
-          onSubmit={handleSubmitEdit}
-          onClose={handleCloseModal}
-        />
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.editUserHeader}>
+              <h2>Edit User</h2>
+              <img
+                src={updatedUser.photo}
+                alt="Profile"
+                className={styles.profileIcon}
+              />
+            </div>
+            <form className={styles.form}>
+              <div className={styles.formGroup}>
+                <label>Username:</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={updatedUser.username}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={updatedUser.email}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Date of Birth:</label>
+                <input
+                  type="date"
+                  name="dob"
+                  value={formatDate(updatedUser.dob)}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>CV:</label>
+                <div className={styles.input_container}>
+                  <input
+                    type="file"
+                    name="cv"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                    required
+                    className={styles.input_field}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Photo:</label>
+                <div className={styles.input_container}>
+                  <input
+                    type="file"
+                    name="photo"
+                    accept="image/jpeg, image/png"
+                    onChange={handleFileChange}
+                    required
+                    className={styles.input_field}
+                  />
+                </div>
+              </div>
+
+              {/* Buttons for saving changes and closing modal */}
+              <div className={styles.modalActions}>
+                <button
+                  type="button"
+                  className={styles.saveBtn}
+                  onClick={handleSubmitEdit}
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  className={styles.closeBtn}
+                  onClick={handleCloseModal}
+                >
+                  Close
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </>
   );
