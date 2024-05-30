@@ -96,6 +96,18 @@ const Main = () => {
   };
 
   const handleSubmitEdit = async () => {
+    if (updatedUser.username.length < 3 || updatedUser.username.length > 20) {
+      alert("Username must be between 3 and 20 characters.");
+      return;
+    }
+
+    // Basic email validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(updatedUser.email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
     let photoUrl, cvUrl;
     console.log(photoUrl, cvUrl);
     if (photoFile !== null) {
