@@ -17,8 +17,8 @@ const Signup = () => {
     captcha: "",
   });
 
-  const [profilePicUrl, setProfilePicUrl] = useState(""); // URL of the uploaded profile picture from Cloudinary
-  const [cvUrl, setCvUrl] = useState(""); // URL of the uploaded CV from Cloudinary
+  // const [profilePicUrl, setProfilePicUrl] = useState(""); // URL of the uploaded profile picture from Cloudinary
+  // const [cvUrl, setCvUrl] = useState(""); // URL of the uploaded CV from Cloudinary
   const [captchaVerified, setCaptchaVerified] = useState(false); // State for CAPTCHA verification
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -89,8 +89,8 @@ const Signup = () => {
       const response = await axios.post(url, formData);
 
       // Set profilePicUrl and cvUrl with the uploaded file URLs
-      setProfilePicUrl(profilePic);
-      setCvUrl(cv);
+      // setProfilePicUrl(profilePic);
+      // setCvUrl(cv);
 
       navigate("/login");
       console.log(response.data.message);

@@ -1,15 +1,31 @@
 import styles from "./styles.module.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ModalPopup from "../Modal";
 // import "./App.css";
 
 const Main = () => {
   const [userData, setUserData] = useState(null);
   const [users, setUsers] = useState([]);
   const [userProfile, setUserProfile] = useState(null); // Added userProfile state
-  const BASE_URL = "http://localhost:8000";
-  const [loading, setLoading] = useState(false);
   const [loadingUser, setLoadingUser] = useState(null);
+  const BASE_URL = "http://localhost:8000";
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleEdit = (user) => {
+    console.log("sele", user);
+    setSelectedUser(user);
+    setShowModal(true);
+  };
+
+  // Event handler to close modal
+  const handleCloseModal = () => {
+    setSelectedUser(null);
+    setShowModal(false);
+  };
+
   // const BASE_URL = "https://iitb-assignment.onrender.com";
 
   useEffect(() => {
@@ -25,39 +41,7 @@ const Main = () => {
     console.log("userData", users);
   }, []);
 
-  // Function to handle updating user profile
-  const updateUserProfile = () => {
-    const { username, email } = userProfile;
-    const updatedProfile = { username, email };
-
-    axios
-      .put(`${BASE_URL}/api/users/${userData.userId}`, updatedProfile, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
-        setUserProfile(response.data);
-        setUserData(response.data);
-        localStorage.setItem("userData", JSON.stringify(response.data));
-      })
-      .catch((error) => console.error("Error updating user profile:", error));
-  };
-  // const updateUserProfile = (userProfile) => {
-  //   const updatedProfile = { ...userProfile };
-  //   delete updatedProfile.cv;
-  //   delete updatedProfile.photo;
-  //   // console.log("upda", updateUserProfile);
-  //   console.log("upda", updatedProfile);
-  //   axios
-  //     .put(`${BASE_URL}/api/users/${userData.userId}`, updatedProfile, {
-  //       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  //     })
-  //     .then(() => {
-  //       // If successful, update userProfile state
-  //       setUserProfile(userProfile);
-  //     })
-  //     .catch((error) => console.error("Error updating user profile:", error));
-  // };
-
+  // Function to fetch the list of users (admin functionality)
   const fetchUsers = () => {
     const url = `${BASE_URL}/api/users`;
     // Fetch the list of users for the admin dashboard
@@ -68,13 +52,14 @@ const Main = () => {
       .then((response) => setUsers(response.data))
       .catch((error) => console.error("Error fetching users:", error));
   };
-
+  // Function to handle logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userData");
     window.location.reload();
   };
 
+  // Function to handle user approval/disapproval
   const handleApproval = (userId, isApproved) => {
     setLoadingUser(userId);
     axios
@@ -95,41 +80,35 @@ const Main = () => {
       });
   };
 
-  //   const handleDownload = (filePath) => {
-  //     const url = `${BASE_URL}/${filePath}`;
-  //     window.open(url, "_blank");
-  //   };
-  //   const renderPhoto = (photo) => {
-  //     if (photo && photo.data) {
-  //       const base64Image = `data:${
-  //         photo.contentType
-  //       };base64,${photo.data.toString("base64")}`;
-  //       return (
-  //         <img
-  //           src={base64Image}
-  //           alt="Profile"
-  //           className={styles.profile_picture}
-  //         />
-  //       );
-  //     } else {
-  //       return "No Picture";
-  //     }
-  //   };
+  // Function to handle updating user profile
+  const updateUserProfile = () => {
+    const { username, email } = userProfile;
+    const updatedProfile = { username, email };
 
-  //   const renderCV = (cv) => {
-  //     if (cv && cv.data) {
-  //       return (
-  //         <button
-  //           onClick={() => handleDownload(`uploads/${cv}`)}
-  //           className={styles.download_btn}
-  //         >
-  //           Download CV
-  //         </button>
-  //       );
-  //     } else {
-  //       return "No CV";
-  //     }
-  //   };
+    axios
+      .put(`${BASE_URL}/api/users/${userData.userId}`, updatedProfile, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then((response) => {
+        setUserProfile(response.data);
+        setUserData(response.data);
+        localStorage.setItem("userData", JSON.stringify(response.data));
+      })
+      .catch((error) => console.error("Error updating user profile:", error));
+  };
+
+  // Function to handle the submission of edited user data from the modal
+  const handleSubmitEdit = (updatedUserData) => {
+    axios
+      .put(`${BASE_URL}/api/users/${updatedUserData._id}`, updatedUserData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then(() => {
+        fetchUsers();
+        handleCloseModal();
+      })
+      .catch((error) => console.error("Error updating user data:", error));
+  };
 
   return (
     <>
@@ -154,6 +133,7 @@ const Main = () => {
                     {/* <th>CV</th> */}
                     <th>Status</th>
                     <th>Actions</th>
+                    <th>Edit</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -183,6 +163,9 @@ const Main = () => {
                             ? "Disapprove"
                             : "Approve"}
                         </button>
+                      </td>
+                      <td>
+                        <button onClick={() => handleEdit(user)}>Edit</button>
                       </td>
                     </tr>
                   ))}
@@ -224,65 +207,6 @@ const Main = () => {
                         }
                       />
                     </div>
-                    {/* <div className={styles.form_container_div}>
-                      <label>Date of Birth:</label>
-                      <input
-                        type="date"
-                        className={styles.input}
-                        value={userProfile.dob}
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            dob: e.target.value,
-                          })
-                        }
-                      />
-                    </div> */}
-                    {/* <div className={styles.form_container_div}>
-                      <label>CV:</label>
-                      <input
-                        className={styles.input}
-                        type="file"
-                        accept=".pdf"
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            cv: e.target.files[0],
-                          })
-                        }
-                      />
-                      {userProfile.cv && (
-                        <a
-                          href={`${BASE_URL}/${userProfile.cv}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          View CV
-                        </a>
-                      )}
-                    </div> */}
-
-                    {/* <div className={styles.form_container_div}>
-                      <label>Photo:</label>
-                      <input
-                        className={styles.input}
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            photo: e.target.files[0],
-                          })
-                        }
-                      />
-                      {userProfile.photo && (
-                        <img
-                          //   src={URL.createObjectURL(userProfile.photo)}
-                          alt="Profile"
-                          className={styles.profile_picture}
-                        />
-                      )}
-                    </div> */}
                     <button
                       className={styles.green_btn}
                       type="button"
@@ -299,6 +223,13 @@ const Main = () => {
           )}
         </div>
       </div>
+      {showModal && (
+        <ModalPopup
+          user={selectedUser}
+          onSubmit={handleSubmitEdit}
+          onClose={handleCloseModal}
+        />
+      )}
     </>
   );
 };
