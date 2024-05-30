@@ -48,6 +48,8 @@ router.put("/:id", async (req, res) => {
     const { username, email, cv, photo, dob } = req.body;
     const updateData = { username, email };
 
+    console.log("backend", req.body);
+
     // Check if CV, photo, and DOB are provided and update the updateData object accordingly
     if (cv) updateData.cv = cv;
     if (photo) updateData.photo = photo;

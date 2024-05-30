@@ -87,6 +87,7 @@ const Main = () => {
         }
       );
       const data = await response.json();
+      // console.log("cloudi", data);
       return data.secure_url;
     } catch (error) {
       console.error("Error uploading file to Cloudinary:", error);
@@ -95,28 +96,40 @@ const Main = () => {
   };
 
   const handleSubmitEdit = async () => {
-    console.log("sele", selectedUser);
-    console.log("up", updatedUser);
-    if (selectedUser.photo === updatedUser.photo) {
-      console.log(selectedUser.photo === updatedUser.photo);
-
-      const photoUrl = await uploadToCloudinary(photoFile);
+    let photoUrl, cvUrl;
+    console.log(photoUrl, cvUrl);
+    if (photoFile !== null) {
+      photoUrl = await uploadToCloudinary(photoFile);
       setUpdatedUser((prevUser) => ({ ...prevUser, photo: photoUrl }));
     }
-    if (selectedUser.cv === updatedUser.cv) {
-      console.log(selectedUser.cv === updatedUser.cv);
-      const cvUrl = await uploadToCloudinary(cvFile);
+
+    if (cvFile !== null) {
+      cvUrl = await uploadToCloudinary(cvFile);
       setUpdatedUser((prevUser) => ({ ...prevUser, cv: cvUrl }));
     }
+    console.log(photoUrl, cvUrl);
 
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Reconstruct the changes object after state updates
     const changes = {};
     for (const key in selectedUser) {
       if (selectedUser[key] !== updatedUser[key]) {
         changes[key] = updatedUser[key];
       }
     }
+    // Add photoUrl and cvUrl to changes if they are defined
+    if (photoUrl) {
+      changes.photo = photoUrl;
+    }
+    if (cvUrl) {
+      changes.cv = cvUrl;
+    }
 
-    console.log("chasges", changes);
+    console.log("Selected User:", selectedUser);
+    console.log("Updated User:", updatedUser);
+    console.log("Changes:", changes);
+
     axios
       .put(`${BASE_URL}/api/users/${selectedUser._id}`, changes, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
