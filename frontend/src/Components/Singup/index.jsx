@@ -17,10 +17,9 @@ const Signup = () => {
     captcha: "",
   });
 
-  // const [profilePicUrl, setProfilePicUrl] = useState(""); // URL of the uploaded profile picture from Cloudinary
-  // const [cvUrl, setCvUrl] = useState(""); // URL of the uploaded CV from Cloudinary
   const [captchaVerified, setCaptchaVerified] = useState(false); // State for CAPTCHA verification
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
 
   // Handle input change
@@ -61,13 +60,32 @@ const Signup = () => {
     }
   };
 
+  // Function to validate form data
+  const validateForm = () => {
+    const errors = {};
+    if (!data.username.trim()) errors.username = "Username is required.";
+    if (!data.email.trim()) errors.email = "Email is required.";
+    if (!data.password.trim()) errors.password = "Password is required.";
+    if (!data.dob.trim()) errors.dob = "Date of Birth is required.";
+    if (!data.photo) errors.photo = "Profile picture is required.";
+    if (!data.cv) errors.cv = "CV is required.";
+    return errors;
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     try {
-      if (!data.photo || !data.cv) {
-        throw new Error("Please upload both a profile picture and a CV.");
+      if (!captchaVerified) {
+        setError("Please complete the CAPTCHA verification.");
+        return;
       }
 
       const profilePic = await uploadToCloudinary(data.photo);
@@ -87,10 +105,6 @@ const Signup = () => {
 
       const url = `${BASE_URL}/api/users`;
       const response = await axios.post(url, formData);
-
-      // Set profilePicUrl and cvUrl with the uploaded file URLs
-      // setProfilePicUrl(profilePic);
-      // setCvUrl(cv);
 
       navigate("/login");
       console.log(response.data.message);
@@ -127,15 +141,26 @@ const Signup = () => {
               value={data.username}
               required
               className={styles.input}
+              minLength={3}
+              maxLength={15}
             />
+            {fieldErrors.username && (
+              <div className={styles.error_msg}>{fieldErrors.username}</div>
+            )}
             <input
               type="email"
               placeholder="Email"
               name="email"
               onChange={handleChange}
               value={data.email}
+              required
               className={styles.input}
+              minLength={6}
+              maxLength={20}
             />
+            {fieldErrors.email && (
+              <div className={styles.error_msg}>{fieldErrors.email}</div>
+            )}
             <input
               type="password"
               placeholder="Password"
@@ -144,7 +169,12 @@ const Signup = () => {
               value={data.password}
               required
               className={styles.input}
+              minLength={6}
+              maxLength={20}
             />
+            {fieldErrors.password && (
+              <div className={styles.error_msg}>{fieldErrors.password}</div>
+            )}
             <input
               type="date"
               name="dob"
@@ -153,6 +183,9 @@ const Signup = () => {
               required
               className={styles.input}
             />
+            {fieldErrors.dob && (
+              <div className={styles.error_msg}>{fieldErrors.dob}</div>
+            )}
             <div className={styles.input_container}>
               <input
                 type="file"
@@ -185,6 +218,9 @@ const Signup = () => {
                 />
               </svg>
             </div>
+            {fieldErrors.photo && (
+              <div className={styles.error_msg}>{fieldErrors.photo}</div>
+            )}
             <div className={styles.input_container}>
               <input
                 type="file"
@@ -212,6 +248,9 @@ const Signup = () => {
                 />
               </svg>
             </div>
+            {fieldErrors.cv && (
+              <div className={styles.error_msg}>{fieldErrors.cv}</div>
+            )}
             <ReCAPTCHA
               sitekey="6LcvLuopAAAAAPfU0avqIaru49qmrsJq7Kl6H0Pb" // Added ReCAPTCHA component
               onChange={handleCaptcha}
@@ -220,7 +259,7 @@ const Signup = () => {
             <button
               type="submit"
               className={styles.green_btn}
-              disabled={!captchaVerified}
+              // disabled={!captchaVerified}
             >
               Sign Up
             </button>

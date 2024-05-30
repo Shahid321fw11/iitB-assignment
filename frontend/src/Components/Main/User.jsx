@@ -11,12 +11,8 @@ const User = () => {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     setUserData(userData);
-  }, []);
-  const photoUrl = JSON.parse(localStorage.getItem("userData")).photo;
-
-  useEffect(() => {
     setUserProfile(userData);
-  }, [userData]);
+  }, []);
 
   const BASE_URL = "http://localhost:8000";
 
@@ -41,63 +37,31 @@ const User = () => {
     }
   };
 
-  //   const updateUserProfile = () => {
-  //     const formData = new FormData();
-  //     formData.append("username", userProfile.username);
-  //     formData.append("email", userProfile.email);
-  //     formData.append("password", userProfile.password);
-  //     formData.append("dob", userProfile.dob);
-  //     formData.append("cv", cvFile); // Append CV file
-  //     formData.append("photo", photoFile); // Append photo file
-  //     const formDataValues = {};
-  //     for (const [key, value] of formData.entries()) {
-  //       formDataValues[key] = value;
-  //     }
-
-  //     console.log(formDataValues);
-  //     console.log(userProfile._id);
-  //     axios
-  //       .put(`${BASE_URL}/api/users/${userProfile._id}`, formData, {
-  //         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  //       })
-  //       .then((response) => {
-  //         setUserProfile(response.data);
-  //         localStorage.setItem("userData", JSON.stringify(response.data));
-  //       })
-  //       .catch((error) => console.error("Error updating user profile:", error));
-  //   };
+  const detectChanges = (oldData, newData) => {
+    const changes = {};
+    for (const key in newData) {
+      if (newData[key] !== oldData[key]) {
+        changes[key] = newData[key];
+      }
+    }
+    return changes;
+  };
 
   const updateUserProfile = async () => {
+    console.log("cjids");
     try {
+      const changes = detectChanges(userData, userProfile);
       const formData = new FormData();
 
-      // Check if username is changed
-      if (userProfile.username !== userData.username) {
-        formData.append("username", userProfile.username);
+      for (const key in changes) {
+        formData.append(key, changes[key]);
       }
 
-      // Check if email is changed
-      if (userProfile.email !== userData.email) {
-        formData.append("email", userProfile.email);
-      }
-
-      // Check if password is changed
-      if (userProfile.password !== userData.password) {
-        formData.append("password", userProfile.password);
-      }
-
-      // Check if dob is changed
-      if (userProfile.dob !== userData.dob) {
-        formData.append("dob", userProfile.dob);
-      }
-
-      // Check if CV file exists and is of correct type
       if (cvFile && cvFile.type === "application/pdf") {
         const cvUrl = await uploadToCloudinary(cvFile);
         formData.append("cv", cvUrl);
       }
 
-      // Check if photo file exists and is of correct type
       if (
         photoFile &&
         (photoFile.type === "image/jpeg" || photoFile.type === "image/png")
@@ -106,10 +70,9 @@ const User = () => {
         formData.append("photo", photoUrl);
       }
 
-      // If any changes detected, send request to update profile
       if (formData.entries().next().done === false) {
         axios
-          .put(`${BASE_URL}/api/users/${userProfile._id}`, formData, {
+          .put(`${BASE_URL}/api/users/${userData._id}`, formData, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -127,21 +90,24 @@ const User = () => {
     }
   };
 
-  // Handle photo file change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUserProfile({ ...userProfile, [name]: value });
+  };
+
   const handlePhotoChange = (e) => {
     setPhotoFile(e.target.files[0]);
   };
 
-  // Handle CV file change
   const handleCvChange = (e) => {
     setCvFile(e.target.files[0]);
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return ""; // Handle empty dateString
+    if (!dateString) return "";
     const date = new Date(dateString);
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Ensure two digits for month
-    const day = date.getDate().toString().padStart(2, "0"); // Ensure two digits for day
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${year}-${month}-${day}`;
   };
@@ -150,9 +116,12 @@ const User = () => {
     <div className={styles.user_section}>
       <div className={styles.editUserHeader}>
         <h2>Welcome, {userData ? userData.username : "User"}!</h2>
-        <img src={photoUrl} alt="Profile" className={styles.profileIcon} />
+        <img
+          src={userData?.photo}
+          alt="Profile"
+          className={styles.profileIcon}
+        />
       </div>
-      {/* <h2>Welcome, {userData ? userData.username : "User"}!</h2> */}
       {userProfile ? (
         <>
           <p>Manage your profile from here</p>
@@ -161,56 +130,40 @@ const User = () => {
               <label>Username:</label>
               <input
                 type="text"
+                name="username"
                 className={styles.input}
                 value={userProfile.username}
-                onChange={(e) =>
-                  setUserProfile({
-                    ...userProfile,
-                    username: e.target.value,
-                  })
-                }
+                onChange={handleInputChange}
               />
             </div>
             <div className={styles.form_container_div}>
               <label>Email:</label>
               <input
                 type="email"
+                name="email"
                 className={styles.input}
                 value={userProfile.email}
-                onChange={(e) =>
-                  setUserProfile({
-                    ...userProfile,
-                    email: e.target.value,
-                  })
-                }
+                onChange={handleInputChange}
               />
             </div>
             <div className={styles.form_container_div}>
               <label>Password:</label>
               <input
                 type="text"
+                name="password"
                 className={styles.input}
                 value={userProfile.password}
-                onChange={(e) =>
-                  setUserProfile({
-                    ...userProfile,
-                    password: e.target.value,
-                  })
-                }
+                onChange={handleInputChange}
               />
             </div>
             <div className={styles.form_container_div}>
               <label>Date of Birth:</label>
               <input
                 type="date"
+                name="dob"
                 className={styles.input}
                 value={formatDate(userProfile.dob)}
-                onChange={(e) =>
-                  setUserProfile({
-                    ...userProfile,
-                    dob: e.target.value,
-                  })
-                }
+                onChange={handleInputChange}
               />
             </div>
             <div className={styles.form_container_div}>
@@ -221,25 +174,7 @@ const User = () => {
                   name="cv"
                   accept="application/pdf"
                   onChange={handleCvChange}
-                  required
-                  className={""}
                 />
-                <svg
-                  className={`${styles.icon} w-6 h-6 text-gray-800 dark:text-white`}
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"
-                  />
-                </svg>
               </div>
             </div>
             <div className={styles.form_container_div}>
@@ -250,31 +185,7 @@ const User = () => {
                   name="photo"
                   accept="image/jpeg, image/png"
                   onChange={handlePhotoChange}
-                  required
-                  className={""}
                 />
-                <svg
-                  className={`${styles.icon} w-6 h-6 text-gray-800 dark:text-white`}
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 18V8a1 1 0 0 1 1-1h1.5l1.707-1.707A1 1 0 0 1 8.914 5h6.172a1 1 0 0 1 .707.293L17.5 7H19a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"
-                  />
-                  <path
-                    stroke="currentColor"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                </svg>
               </div>
             </div>
             <button

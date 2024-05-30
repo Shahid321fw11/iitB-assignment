@@ -10,6 +10,7 @@ const Login = () => {
   const [data, setData] = useState({ username: "", password: "", captcha: "" });
   const [captchaVerified, setCaptchaVerified] = useState(false); // State for CAPTCHA verification
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleChange = ({ currentTarget: input }) => {
     setData({ ...data, [input.name]: input.value });
@@ -20,9 +21,27 @@ const Login = () => {
     setCaptchaVerified(!!value); // Update CAPTCHA verification state
   };
 
+  const validateForm = () => {
+    const errors = {};
+    if (!data.username.trim()) errors.username = "Username is required.";
+    if (!data.password.trim()) errors.password = "Password is required.";
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     try {
+      if (!captchaVerified) {
+        setError("Please complete the CAPTCHA verification.");
+        return;
+      }
       const url = `${BASE_URL}/api/auth`;
       console.log("logindata", data);
       const { data: res } = await axios.post(url, data);
@@ -54,7 +73,12 @@ const Login = () => {
               value={data.username}
               required
               className={styles.input}
+              minLength={3}
+              maxLength={15}
             />
+            {fieldErrors.username && (
+              <div className={styles.error_msg}>{fieldErrors.username}</div>
+            )}
             <input
               type="password"
               placeholder="Password"
@@ -63,7 +87,12 @@ const Login = () => {
               value={data.password}
               required
               className={styles.input}
+              minLength={6}
+              maxLength={20}
             />
+            {fieldErrors.password && (
+              <div className={styles.error_msg}>{fieldErrors.password}</div>
+            )}
 
             <ReCAPTCHA
               sitekey="6LcvLuopAAAAAPfU0avqIaru49qmrsJq7Kl6H0Pb"
@@ -75,7 +104,7 @@ const Login = () => {
             <button
               type="submit"
               className={styles.green_btn}
-              disabled={!captchaVerified} // Disable button if CAPTCHA is not verified
+              // disabled={!captchaVerified} // Disable button if CAPTCHA is not verified
             >
               Sign In
             </button>
