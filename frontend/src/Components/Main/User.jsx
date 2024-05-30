@@ -14,7 +14,8 @@ const User = () => {
     setUserProfile(userData);
   }, []);
 
-  const BASE_URL = "http://localhost:8000";
+  // const BASE_URL = "http://localhost:8000";
+  const BASE_URL = "https://iitb-assignment.onrender.com";
 
   const uploadToCloudinary = async (file) => {
     try {

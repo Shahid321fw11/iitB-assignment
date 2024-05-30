@@ -5,8 +5,8 @@ import styles from "./styles.module.css";
 import ReCAPTCHA from "react-google-recaptcha"; // Added for CAPTCHA
 
 const Signup = () => {
-  // const BASE_URL = "https://iitb-assignment.onrender.com";
-  const BASE_URL = "http://localhost:8000";
+  const BASE_URL = "https://iitb-assignment.onrender.com";
+  // const BASE_URL = "http://localhost:8000";
   const [data, setData] = useState({
     username: "",
     email: "",
