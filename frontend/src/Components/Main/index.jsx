@@ -2,6 +2,7 @@ import styles from "./styles.module.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ModalPopup from "../Modal";
+import User from "./User";
 // import "./App.css";
 
 const Main = () => {
@@ -97,45 +98,8 @@ const Main = () => {
       .catch((error) => console.error("Error updating user profile:", error));
   };
 
-  // Function to upload file to Cloudinary
-  const uploadToCloudinary = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "my-mern-chat-app-cloud"); //due to limit 1 of cloudinary using my old account.
-      formData.append("cloud_name", "my-chat-app-mern-cloudinary"); // Replace with your Cloudinary cloud name
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/my-chat-app-mern-cloudinary/image/upload`, // Replace with your Cloudinary endpoint
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      const data = await response.json();
-      return data.secure_url; // Return the secure URL of the uploaded file
-    } catch (error) {
-      console.error("Error uploading file to Cloudinary:", error);
-      throw error;
-    }
-  };
-
   // Function to handle the submission of edited user data from the modal
-  const handleSubmitEdit = async (updatedUserData) => {
-    // console.log("pre", selectedUser);
-    // console.log("update", updatedUserData);
-
-    // Check if CV has been updated
-    if (selectedUser.cv !== updatedUserData.cv) {
-      const cvUrl = await uploadToCloudinary(updatedUserData.cv);
-      updatedUserData.cv = cvUrl;
-    }
-
-    // Check if photo has been updated
-    if (selectedUser.photo !== updatedUserData.photo) {
-      const photoUrl = await uploadToCloudinary(updatedUserData.photo);
-      updatedUserData.photo = photoUrl;
-    }
-
+  const handleSubmitEdit = (updatedUserData) => {
     axios
       .put(`${BASE_URL}/api/users/${updatedUserData._id}`, updatedUserData, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -210,53 +174,55 @@ const Main = () => {
               </table>
             </div>
           ) : (
-            <div className={styles.user_section}>
-              <h2>Welcome, {userData ? userData.username : "User"}!</h2>
-              {userProfile ? (
-                <>
-                  <p>Manage your profile:</p>
-                  <form className={styles.form_container}>
-                    <div className={styles.form_container_div}>
-                      <label>Username:</label>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        value={userProfile.username}
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            username: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className={styles.form_container_div}>
-                      <label>Email:</label>
-                      <input
-                        type="email"
-                        className={styles.input}
-                        value={userProfile.email}
-                        onChange={(e) =>
-                          setUserProfile({
-                            ...userProfile,
-                            email: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <button
-                      className={styles.green_btn}
-                      type="button"
-                      onClick={() => updateUserProfile(userProfile)}
-                    >
-                      Update Profile
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <p>Loading...</p>
-              )}
-            </div>
+            // <div className={styles.user_section}>
+            //   <h2>Welcome, {userData ? userData.username : "User"}!</h2>
+            //   {userProfile ? (
+            //     <>
+            //       <p>Manage your profile:</p>
+            //       <form className={styles.form_container}>
+            //         <div className={styles.form_container_div}>
+            //           <label>Username:</label>
+            //           <input
+            //             type="text"
+            //             className={styles.input}
+            //             value={userProfile.username}
+            //             onChange={(e) =>
+            //               setUserProfile({
+            //                 ...userProfile,
+            //                 username: e.target.value,
+            //               })
+            //             }
+            //           />
+            //         </div>
+            //         <div className={styles.form_container_div}>
+            //           <label>Email:</label>
+            //           <input
+            //             type="email"
+            //             className={styles.input}
+            //             value={userProfile.email}
+            //             onChange={(e) =>
+            //               setUserProfile({
+            //                 ...userProfile,
+            //                 email: e.target.value,
+            //               })
+            //             }
+            //           />
+            //         </div>
+            //         <button
+            //           className={styles.green_btn}
+            //           type="button"
+            //           onClick={() => updateUserProfile(userProfile)}
+            //         >
+            //           Update Profile
+            //         </button>
+            //       </form>
+            //     </>
+            //   ) : (
+            //     <p>Loading...</p>
+            //   )}
+            // </div>
+            // <User />
+            <User userData={userData} />
           )}
         </div>
       </div>
