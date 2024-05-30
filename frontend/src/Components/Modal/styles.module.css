@@ -48,22 +48,22 @@
     justify-content: space-between;
 }
 
-.saveBtn {
-    background-color: #3bb19b;
-    color: white;
+.saveBtn,
+.closeBtn {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
+.saveBtn {
+    background-color: #3bb19b;
+    color: white;
+}
+
 .closeBtn {
     background-color: #f44336;
     color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
 }
 
 /* Style for the Edit User header */
@@ -77,7 +77,33 @@
 /* Style for the profile icon */
 .profileIcon {
     width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        margin-left: 10px;
+    height: 50px;
+    border-radius: 50%;
+    margin-left: 10px;
+}
+
+/* Style for the input container */
+.input_container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Style for the input field */
+.input_field {
+    width: calc(100% - 40px);
+    /* Adjust based on the icon width */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Style for the icon */
+.icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: gray;
 }

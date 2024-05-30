@@ -45,16 +45,25 @@ router.get("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const { username, email } = req.body;
+    const { username, email, cv, photo, dob } = req.body;
     const updateData = { username, email };
+
+    // Check if CV, photo, and DOB are provided and update the updateData object accordingly
+    if (cv) updateData.cv = cv;
+    if (photo) updateData.photo = photo;
+    if (dob) updateData.dob = dob;
 
     const user = await User.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });
+
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    // If username, email, and DOB are provided in the request body, update them
     if (username) user.username = username;
     if (email) user.email = email;
+    if (dob) user.dob = dob;
 
     // Save the updated user data
     await user.save();
